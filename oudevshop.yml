@@ -1,0 +1,12 @@
+---
+# file: oudevshop.yml
+- hosts: all
+  user: root
+  roles:
+    - opendevshop.aegir-user
+    - opendevshop.aegir-apache
+    - geerlingguy.php
+    - geerlingguy.php-mysql
+    - geerlingguy.composer
+    - opendevshop.devmaster
+    - public_keys

@@ -1,0 +1,30 @@
+---
+# File: roles/hostmaster/tasks/main.yml
+- name: Download hostmaster
+  command: /bin/drush -y dl --destination=/var/aegir/.drush provision-7.x-3.0
+  become: yes
+  become_user: aegir
+- name: Cache clear
+  command: /bin/drush cache-clear drush
+  become: yes
+  become_user: aegir
+- name: Create symlink for apache config
+  file: path=/etc/httpd/conf.d/aegir.conf src=/var/aegir/config/apache.conf state=link force=yes
+- name: Create sudoers config
+  copy: dest=/etc/sudoers.d/aegir src=aegir_sudoers mode=0400
+- name: Run hostmaster-install
+  command: /bin/drush -y hostmaster-install --aegir_db_pass={{ aegir_mysql_root_pass }} {{ ansible_fqdn }}
+  become: yes
+  become_user: aegir
+  register: hostmasterinstall
+- name: create ssh keys
+  command: echo -e 'y\n' | ssh-keygen -f /var/aegir/.ssh/id_rsa -t rsa -N ''
+  become: yes
+  become_user: aegir
+- name: create public key area
+  file: path=/var/aegir/public_key state=directory
+- name: copy public key to public key area
+  copy: src=/var/aegir/.ssh/id_rsa.pub dest=/var/aegir/public_key/id_rsa.pub
+- name: Create public key apache config
+  copy: dest=/var/aegir/config/server_master/apache/pre.d/public_key.conf src=public_key.conf
+- debug: var=hostmasterinstall.stdout_lines

@@ -1,0 +1,5 @@
+---
+# file: keys.yml
+- hosts: all
+  roles:
+    - public_keys
